@@ -1,0 +1,260 @@
+{
+	"name": "Initial_load",
+	"properties": {
+		"activities": [
+			{
+				"name": "Copy data from source",
+				"type": "Copy",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 1,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "RestSource",
+						"httpRequestTimeout": "00:01:40",
+						"requestInterval": "00.00:00:00.010",
+						"requestMethod": "GET",
+						"paginationRules": {
+							"supportRFC5988": "true"
+						}
+					},
+					"sink": {
+						"type": "DelimitedTextSink",
+						"storeSettings": {
+							"type": "AzureBlobFSWriteSettings"
+						},
+						"formatSettings": {
+							"type": "DelimitedTextWriteSettings",
+							"quoteAllText": true,
+							"fileExtension": ".txt"
+						}
+					},
+					"enableStaging": false,
+					"translator": {
+						"type": "TabularTranslator",
+						"mappings": [
+							{
+								"source": {
+									"path": "['open']"
+								},
+								"sink": {
+									"name": "open"
+								}
+							},
+							{
+								"source": {
+									"path": "['high']"
+								},
+								"sink": {
+									"name": "high"
+								}
+							},
+							{
+								"source": {
+									"path": "['low']"
+								},
+								"sink": {
+									"name": "low"
+								}
+							},
+							{
+								"source": {
+									"path": "['close']"
+								},
+								"sink": {
+									"name": "close"
+								}
+							},
+							{
+								"source": {
+									"path": "['volume']"
+								},
+								"sink": {
+									"name": "volume"
+								}
+							},
+							{
+								"source": {
+									"path": "['adj_high']"
+								},
+								"sink": {
+									"name": "adj_high"
+								}
+							},
+							{
+								"source": {
+									"path": "['adj_low']"
+								},
+								"sink": {
+									"name": "adj_low"
+								}
+							},
+							{
+								"source": {
+									"path": "['adj_close']"
+								},
+								"sink": {
+									"name": "adj_close"
+								}
+							},
+							{
+								"source": {
+									"path": "['adj_open']"
+								},
+								"sink": {
+									"name": "adj_open"
+								}
+							},
+							{
+								"source": {
+									"path": "['adj_volume']"
+								},
+								"sink": {
+									"name": "adj_volume"
+								}
+							},
+							{
+								"source": {
+									"path": "['split_factor']"
+								},
+								"sink": {
+									"name": "split_factor"
+								}
+							},
+							{
+								"source": {
+									"path": "['dividend']"
+								},
+								"sink": {
+									"name": "dividend"
+								}
+							},
+							{
+								"source": {
+									"path": "['symbol']"
+								},
+								"sink": {
+									"name": "symbol"
+								}
+							},
+							{
+								"source": {
+									"path": "['exchange']"
+								},
+								"sink": {
+									"name": "exchange"
+								}
+							},
+							{
+								"source": {
+									"path": "['date']"
+								},
+								"sink": {
+									"name": "date"
+								}
+							},
+							{
+								"source": {
+									"path": "$['pagination']['limit']"
+								},
+								"sink": {
+									"name": "limit"
+								}
+							},
+							{
+								"source": {
+									"path": "$['pagination']['offset']"
+								},
+								"sink": {
+									"name": "offset"
+								}
+							},
+							{
+								"source": {
+									"path": "$['pagination']['count']"
+								},
+								"sink": {
+									"name": "count"
+								}
+							},
+							{
+								"source": {
+									"path": "$['pagination']['total']"
+								},
+								"sink": {
+									"name": "total"
+								}
+							}
+						],
+						"collectionReference": "$['data']",
+						"mapComplexValuesToString": false
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "RestResource",
+						"type": "DatasetReference",
+						"parameters": {
+							"relativeurl": {
+								"value": "@concat(\n'eod?access_key=a2111b16fc8438cc09103b6983d0b791',\n'&symbols=AAPL',\n'&date_from=1990-01-01','&limit=100',\n'&offset=',string(variables('varofset'))\n)",
+								"type": "Expression"
+							}
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "sourcetobronzsink",
+						"type": "DatasetReference"
+					}
+				]
+			},
+			{
+				"name": "Stored procedure1",
+				"type": "SqlServerStoredProcedure",
+				"dependsOn": [
+					{
+						"activity": "Copy data from source",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"storedProcedureName": "[dbo].[NewStoredProcedure]"
+				},
+				"linkedServiceName": {
+					"referenceName": "AzureSqlDatabase1",
+					"type": "LinkedServiceReference"
+				}
+			}
+		],
+		"variables": {
+			"varofset": {
+				"type": "Integer",
+				"defaultValue": 0
+			},
+			"count": {
+				"type": "Integer",
+				"defaultValue": 1
+			}
+		},
+		"annotations": [],
+		"lastPublishTime": "2026-05-02T19:30:41Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

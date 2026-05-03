@@ -1,0 +1,351 @@
+{
+	"name": "incremental_load",
+	"properties": {
+		"activities": [
+			{
+				"name": "Set variable1",
+				"type": "SetVariable",
+				"dependsOn": [
+					{
+						"activity": "Lookup1",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "varlastload",
+					"value": {
+						"value": "@activity('Lookup1').output.firstRow.lastloaddate",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "Lookup1",
+				"type": "Lookup",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "AzureSqlSource",
+						"sqlReaderQuery": "SELECT lastloaddate from watermarkTable where Tablename = 'StockData';",
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"dataset": {
+						"referenceName": "AzureSqlTable1",
+						"type": "DatasetReference"
+					}
+				}
+			},
+			{
+				"name": "Stored procedure",
+				"type": "SqlServerStoredProcedure",
+				"dependsOn": [
+					{
+						"activity": "Set variable2",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 1,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"storedProcedureName": "[dbo].[NewStoredProcedure]"
+				},
+				"linkedServiceName": {
+					"referenceName": "AzureSqlDatabase1",
+					"type": "LinkedServiceReference"
+				}
+			},
+			{
+				"name": "Copy data1",
+				"type": "Copy",
+				"dependsOn": [
+					{
+						"activity": "Set variable1",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "RestSource",
+						"httpRequestTimeout": "00:01:40",
+						"requestInterval": "00.00:00:00.010",
+						"requestMethod": "GET",
+						"paginationRules": {
+							"supportRFC5988": "true"
+						}
+					},
+					"sink": {
+						"type": "DelimitedTextSink",
+						"storeSettings": {
+							"type": "AzureBlobFSWriteSettings"
+						},
+						"formatSettings": {
+							"type": "DelimitedTextWriteSettings",
+							"quoteAllText": true,
+							"fileExtension": ".csv"
+						}
+					},
+					"enableStaging": false,
+					"translator": {
+						"type": "TabularTranslator",
+						"mappings": [
+							{
+								"source": {
+									"path": "$['data'][0]['open']"
+								},
+								"sink": {
+									"name": "open",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "$['data'][0]['high']"
+								},
+								"sink": {
+									"name": "high",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "$['data'][0]['low']"
+								},
+								"sink": {
+									"name": "low",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "$['data'][0]['close']"
+								},
+								"sink": {
+									"name": "close",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "$['data'][0]['volume']"
+								},
+								"sink": {
+									"name": "volume",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "$['data'][0]['adj_high']"
+								},
+								"sink": {
+									"name": "adj_high",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "$['data'][0]['adj_low']"
+								},
+								"sink": {
+									"name": "adj_low",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "$['data'][0]['adj_close']"
+								},
+								"sink": {
+									"name": "adj_close",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "$['data'][0]['adj_open']"
+								},
+								"sink": {
+									"name": "adj_open",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "$['data'][0]['adj_volume']"
+								},
+								"sink": {
+									"name": "adj_volume",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "$['data'][0]['split_factor']"
+								},
+								"sink": {
+									"name": "split_factor",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "$['data'][0]['dividend']"
+								},
+								"sink": {
+									"name": "dividend",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "$['data'][0]['symbol']"
+								},
+								"sink": {
+									"name": "symbol",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "$['data'][0]['exchange']"
+								},
+								"sink": {
+									"name": "exchange",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "$['data'][0]['date']"
+								},
+								"sink": {
+									"name": "date",
+									"type": "Date"
+								}
+							}
+						],
+						"collectionReference": "$['data']",
+						"mapComplexValuesToString": true
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "RestResource",
+						"type": "DatasetReference",
+						"parameters": {
+							"relativeurl": {
+								"value": "@concat(\n'eod?access_key=a2111b16fc8438cc09103b6983d0b791',\n'&symbols=AAPL',\n'&date_from=',formatDateTime(variables('varlastload'),'yyyy-MM-dd'),'&limit=100',\n'&offset=',string(variables('varoffset'))\n)",
+								"type": "Expression"
+							}
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "IncrementalData",
+						"type": "DatasetReference"
+					}
+				]
+			},
+			{
+				"name": "Set variable inside until",
+				"type": "SetVariable",
+				"dependsOn": [
+					{
+						"activity": "Copy data1",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "tempvaroffset",
+					"value": {
+						"value": "@add(variables('varoffset'), 100)",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "Set variable2",
+				"type": "SetVariable",
+				"dependsOn": [
+					{
+						"activity": "Set variable inside until",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "varoffset",
+					"value": {
+						"value": "@variables('tempvaroffset')",
+						"type": "Expression"
+					}
+				}
+			}
+		],
+		"variables": {
+			"varlastload": {
+				"type": "String",
+				"defaultValue": "1990-01-01"
+			},
+			"tempvaroffset": {
+				"type": "Integer",
+				"defaultValue": 0
+			},
+			"varoffset": {
+				"type": "Integer",
+				"defaultValue": 0
+			}
+		},
+		"annotations": [],
+		"lastPublishTime": "2026-05-02T19:33:21Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

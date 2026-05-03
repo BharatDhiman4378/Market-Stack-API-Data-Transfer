@@ -1,0 +1,15 @@
+{
+	"name": "marketstackfactory",
+	"properties": {
+		"trustModeClaimForMi": {
+			"value": "Enabled",
+			"editable": true
+		}
+	},
+	"location": "eastus",
+	"identity": {
+		"type": "SystemAssigned",
+		"principalId": "f87227c4-79d8-4436-86f4-f77d51d4037b",
+		"tenantId": "b8a35ffb-3250-4a6a-8a60-bb4adbf9c77f"
+	}
+}
